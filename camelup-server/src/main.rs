@@ -1,37 +1,51 @@
+mod game;
 use serde::{Deserialize, Serialize};
 use ws::{listen, CloseCode, Handler, Message, Result, Sender};
-
-struct Server {
-    out: Sender,
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 struct GameRequest {
     throw_dice: bool,
-    player_id: u8,
+    player_id: usize,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct GameResponse {
     error_code: u8,
+    game: game::Game,
 }
 
+struct Server {
+    out: Sender,
+    game: &mut game::Game,
+}
 impl Handler for Server {
     fn on_message(&mut self, msg: Message) -> Result<()> {
         let body = msg.into_text()?;
         let request: GameRequest = match serde_json::from_str(&body) {
             Ok(v) => v,
             Err(_) => {
-                return self
-                    .out
-                    .send(serde_json::to_string(&GameResponse { error_code: 1 }).unwrap())
+                return self.out.send(
+                    serde_json::to_string(&GameResponse {
+                        error_code: 1,
+                        game: self.game.clone(),
+                    })
+                    .unwrap(),
+                )
             }
         };
-        println!("GameRequest: {:?}", request);
-        println!("Main {}", a);
-        if request.throw_dice {}
+        // println!("GameRequest: {:?}", request);
+        // println!("Main {:?}", self.game);
+        if request.throw_dice {
+            let dice = game::pyramid::throw_dice(&mut self.game.dice_pool);
+            game::race_circuit::move_camel(dice.camel_id, dice.number, &mut self.game.circuit);
+            self.game.players[request.player_id].points += 1;
+        }
 
-        let serialized = serde_json::to_string(&GameResponse { error_code: 0 }).unwrap();
+        let serialized = serde_json::to_string(&GameResponse {
+            error_code: 0,
+            game: self.game.clone(),
+        })
+        .unwrap();
         return self.out.send(serialized);
     }
 
@@ -45,8 +59,7 @@ impl Handler for Server {
 }
 
 fn main() {
-    let a = "asd";
-    //let mut game = Game::new();
+    let mut game = game::Game::new();
 
     //println!("{}", Game::is_player_turn(0, &game));
     // Option 1. Throw dice.
@@ -66,5 +79,9 @@ fn main() {
 
     //println!("{:?}", game);
 
-    listen("127.0.0.1:3000", |out| Server { out: out }).unwrap();
+    listen("127.0.0.1:3000", |out| Server {
+        out: out,
+        game: &mut game,
+    })
+    .unwrap();
 }

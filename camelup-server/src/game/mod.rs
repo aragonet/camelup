@@ -1,20 +1,21 @@
-mod pyramid;
-mod race_circuit;
-mod round_market;
+pub mod pyramid;
+pub mod race_circuit;
+pub mod round_market;
 use rand::distributions::{Distribution, Uniform};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Camel {
     id: u8,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Player {
     pub id: u8,
     pub points: u8,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Game {
     pub camels: Vec<Camel>,
     pub players: Vec<Player>,
