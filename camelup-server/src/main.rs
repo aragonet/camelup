@@ -6,7 +6,8 @@ use ws::{listen, CloseCode, Handler, Message, Result, Sender};
 #[derive(Serialize, Deserialize, Debug)]
 struct GameRequest {
     throw_dice: bool,
-    player_id: usize,
+    player_id: String,
+    get_camel_round_card: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -25,8 +26,7 @@ impl Handler for Server {
         let body = msg.into_text()?;
         let request: GameRequest = match serde_json::from_str(&body) {
             Ok(v) => v,
-            Err(e) => {
-                println!("{}", e);
+            Err(_) => {
                 return self.out.send(
                     serde_json::to_string(&GameResponse {
                         error_code: 1,
@@ -37,6 +37,7 @@ impl Handler for Server {
             }
         };
         println!("GameRequest: {:?}", request);
+
         if game_guard.game_ended {
             let serialized = serde_json::to_string(&GameResponse {
                 error_code: 0,
@@ -45,26 +46,64 @@ impl Handler for Server {
             .unwrap();
             return self.out.send(serialized);
         }
-        // println!("Main {:?}", self.game);
-        if request.throw_dice {
-            println!("{:?}", game_guard.dice_pool);
-            let dice = game::pyramid::throw_dice(&mut game_guard.dice_pool);
-            println!("{:?}", game_guard.dice_pool);
-            game::race_circuit::move_camel(dice.camel_id, dice.number, &mut game_guard.circuit);
-            game_guard.players[request.player_id].points += 1;
+
+        let player_id = match game_guard
+            .players
+            .iter()
+            .position(|x| x.id == request.player_id)
+        {
+            Some(id) => (id + 1) as u8,
+            None => {
+                return self.out.send(
+                    serde_json::to_string(&GameResponse {
+                        error_code: 1,
+                        game: game_guard.clone(),
+                    })
+                    .unwrap(),
+                );
+            }
+        };
+
+        if !game_guard.is_player_turn(player_id) {
+            return self.out.send(
+                serde_json::to_string(&GameResponse {
+                    error_code: 1,
+                    game: game_guard.clone(),
+                })
+                .unwrap(),
+            );
         }
 
-        if game::pyramid::is_the_round_ended(&mut game_guard.dice_pool) {
-            // TODO maybe should just use mutable cause clone slows down. Further reaserch needed.
-            let round_cards = game_guard.round_cards.clone();
-            let circuit = game_guard.circuit.clone();
-            game::round_market::give_out_points(&round_cards, &mut game_guard.players, &circuit);
-            // TODO restore betting cards
-            game_guard.dice_pool = game::pyramid::new_dice_pool();
+        if request.throw_dice {
+            game_guard.players[(player_id - 1) as usize].points += 1;
+            let dice = game::pyramid::throw_dice(&mut game_guard.dice_pool);
+            game::race_circuit::move_camel(dice.camel_id, dice.number, &mut game_guard.circuit);
+        } else if request.get_camel_round_card != 0 {
+            if request.get_camel_round_card >= game_guard.camels.len() as u8 {
+                return self.out.send(
+                    serde_json::to_string(&GameResponse {
+                        error_code: 1,
+                        game: game_guard.clone(),
+                    })
+                    .unwrap(),
+                );
+            }
+
+            game::round_market::get_card(
+                player_id,
+                request.get_camel_round_card,
+                &mut game_guard.round_cards,
+            );
         }
 
         if game::race_circuit::camel_won(&game_guard.circuit) {
-            game_guard.game_ended = true;
+            game_guard.on_game_end();
+        } else {
+            if game::pyramid::is_the_round_ended(&mut game_guard.dice_pool) {
+                game_guard.on_round_ended();
+            }
+
+            game_guard.next_player();
         }
 
         let serialized = serde_json::to_string(&GameResponse {

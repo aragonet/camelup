@@ -91,6 +91,6 @@ pub fn give_out_points(
             points = 0;
         }
 
-        players[i].points = points as u8;
+        players[i].points += points as u8;
     }
 }

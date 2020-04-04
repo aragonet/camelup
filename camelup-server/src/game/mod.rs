@@ -1,7 +1,8 @@
 pub mod pyramid;
 pub mod race_circuit;
 pub mod round_market;
-use rand::distributions::{Distribution, Uniform};
+use rand::distributions::{Alphanumeric, Distribution, Uniform};
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -11,8 +12,18 @@ pub struct Camel {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Player {
-    pub id: u8,
+    pub id: String,
     pub points: u8,
+}
+
+impl Player {
+    pub fn new() -> Player {
+        let rand_string: String = thread_rng().sample_iter(&Alphanumeric).take(1).collect();
+        return Player {
+            id: rand_string,
+            points: 0,
+        };
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -30,18 +41,16 @@ impl Game {
     pub fn new() -> Game {
         let mut game = Game {
             camels: vec![Camel { id: 1 }, Camel { id: 2 }, Camel { id: 3 }],
-            players: vec![Player { id: 1, points: 0 }, Player { id: 2, points: 0 }],
+            players: vec![Player::new(), Player::new()],
             circuit: vec![vec![]; 17],
             dice_pool: pyramid::new_dice_pool(),
             round_cards: round_market::new_cards(),
             player_turn: 0,
             game_ended: false,
         };
-
         let mut rng = rand::thread_rng();
         let first_player = Uniform::from(0..game.players.len()).sample(&mut rng);
-        game.player_turn = first_player;
-
+        game.player_turn = first_player + 1;
         validate_dice_and_camels(&pyramid::new_dice_pool(), &game.camels);
         validate_round_cards_and_camels(&round_market::new_cards(), &game.camels);
 
@@ -55,8 +64,26 @@ impl Game {
         return game;
     }
 
-    pub fn is_player_turn(player_id: u8, game: &Game) -> bool {
-        return player_id == game.player_turn as u8;
+    pub fn is_player_turn(&self, player_id: u8) -> bool {
+        return player_id == self.player_turn as u8;
+    }
+
+    pub fn on_round_ended(&mut self) {
+        round_market::give_out_points(&self.round_cards, &mut self.players, &self.circuit);
+        self.dice_pool = pyramid::new_dice_pool();
+        self.round_cards = round_market::new_cards();
+    }
+
+    pub fn on_game_end(&mut self) {
+        self.game_ended = true;
+        round_market::give_out_points(&self.round_cards, &mut self.players, &self.circuit);
+    }
+
+    pub fn next_player(&mut self) {
+        self.player_turn += 1;
+        if self.player_turn >= self.players.len() as usize {
+            self.player_turn = 1;
+        }
     }
 }
 
