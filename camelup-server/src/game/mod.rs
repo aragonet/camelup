@@ -23,6 +23,7 @@ pub struct Game {
     pub dice_pool: Vec<u8>,
     pub round_cards: Vec<Vec<round_market::Card>>,
     pub player_turn: usize,
+    pub game_ended: bool,
 }
 
 impl Game {
@@ -34,6 +35,7 @@ impl Game {
             dice_pool: pyramid::new_dice_pool(),
             round_cards: round_market::new_cards(),
             player_turn: 0,
+            game_ended: false,
         };
 
         let mut rng = rand::thread_rng();

@@ -1,5 +1,6 @@
 mod game;
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 use ws::{listen, CloseCode, Handler, Message, Result, Sender};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -16,34 +17,59 @@ struct GameResponse {
 
 struct Server {
     out: Sender,
-    game: &mut game::Game,
+    game: Arc<Mutex<game::Game>>,
 }
 impl Handler for Server {
     fn on_message(&mut self, msg: Message) -> Result<()> {
+        let mut game_guard = self.game.lock().unwrap();
         let body = msg.into_text()?;
         let request: GameRequest = match serde_json::from_str(&body) {
             Ok(v) => v,
-            Err(_) => {
+            Err(e) => {
+                println!("{}", e);
                 return self.out.send(
                     serde_json::to_string(&GameResponse {
                         error_code: 1,
-                        game: self.game.clone(),
+                        game: game_guard.clone(),
                     })
                     .unwrap(),
-                )
+                );
             }
         };
-        // println!("GameRequest: {:?}", request);
+        println!("GameRequest: {:?}", request);
+        if game_guard.game_ended {
+            let serialized = serde_json::to_string(&GameResponse {
+                error_code: 0,
+                game: game_guard.clone(),
+            })
+            .unwrap();
+            return self.out.send(serialized);
+        }
         // println!("Main {:?}", self.game);
         if request.throw_dice {
-            let dice = game::pyramid::throw_dice(&mut self.game.dice_pool);
-            game::race_circuit::move_camel(dice.camel_id, dice.number, &mut self.game.circuit);
-            self.game.players[request.player_id].points += 1;
+            println!("{:?}", game_guard.dice_pool);
+            let dice = game::pyramid::throw_dice(&mut game_guard.dice_pool);
+            println!("{:?}", game_guard.dice_pool);
+            game::race_circuit::move_camel(dice.camel_id, dice.number, &mut game_guard.circuit);
+            game_guard.players[request.player_id].points += 1;
+        }
+
+        if game::pyramid::is_the_round_ended(&mut game_guard.dice_pool) {
+            // TODO maybe should just use mutable cause clone slows down. Further reaserch needed.
+            let round_cards = game_guard.round_cards.clone();
+            let circuit = game_guard.circuit.clone();
+            game::round_market::give_out_points(&round_cards, &mut game_guard.players, &circuit);
+            // TODO restore betting cards
+            game_guard.dice_pool = game::pyramid::new_dice_pool();
+        }
+
+        if game::race_circuit::camel_won(&game_guard.circuit) {
+            game_guard.game_ended = true;
         }
 
         let serialized = serde_json::to_string(&GameResponse {
             error_code: 0,
-            game: self.game.clone(),
+            game: game_guard.clone(),
         })
         .unwrap();
         return self.out.send(serialized);
@@ -59,7 +85,7 @@ impl Handler for Server {
 }
 
 fn main() {
-    let mut game = game::Game::new();
+    let game = Arc::new(Mutex::new(game::Game::new()));
 
     //println!("{}", Game::is_player_turn(0, &game));
     // Option 1. Throw dice.
@@ -81,7 +107,7 @@ fn main() {
 
     listen("127.0.0.1:3000", |out| Server {
         out: out,
-        game: &mut game,
+        game: game.clone(),
     })
     .unwrap();
 }

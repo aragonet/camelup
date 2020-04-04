@@ -26,3 +26,10 @@ pub fn move_camel(camel_id: u8, count: u8, circuit: &mut Vec<Vec<u8>>) {
     circuit[last_position].extend(a);
     circuit[box_index].drain(camels_index..);
 }
+
+pub fn camel_won(circuit: &Vec<Vec<u8>>) -> bool {
+    match circuit.last() {
+        Some(v) => v.len() > 0,
+        None => false,
+    }
+}
