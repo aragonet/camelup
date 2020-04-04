@@ -5,12 +5,12 @@ use rand::distributions::{Alphanumeric, Distribution, Uniform};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Hash)]
 pub struct Camel {
     id: u8,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Hash)]
 pub struct Player {
     #[serde(skip_serializing)]
     pub id: String,
@@ -30,7 +30,7 @@ impl Player {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Hash)]
 pub struct Game {
     pub id: String,
 
@@ -95,6 +95,11 @@ impl Game {
         if self.player_turn >= self.players.len() as usize {
             self.player_turn = 1;
         }
+    }
+
+    pub fn add_player(&mut self, id: String) -> String {
+        // TODO add player and check id is valid
+        return id;
     }
 }
 
