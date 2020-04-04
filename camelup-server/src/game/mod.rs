@@ -12,12 +12,15 @@ pub struct Camel {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Player {
+    #[serde(skip_serializing)]
     pub id: String,
+
     pub points: u8,
 }
 
 impl Player {
     pub fn new() -> Player {
+        // TODO change random length to 8 when ready to deploy
         let rand_string: String = thread_rng().sample_iter(&Alphanumeric).take(1).collect();
         return Player {
             id: rand_string,
@@ -31,7 +34,10 @@ pub struct Game {
     pub camels: Vec<Camel>,
     pub players: Vec<Player>,
     pub circuit: Vec<Vec<u8>>,
+
+    #[serde(skip_serializing)]
     pub dice_pool: Vec<u8>,
+
     pub round_cards: Vec<Vec<round_market::Card>>,
     pub player_turn: usize,
     pub game_ended: bool,
@@ -40,6 +46,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> Game {
         let mut game = Game {
+            // TODO change camel and dices length to 6 when ready to deploy
             camels: vec![Camel { id: 1 }, Camel { id: 2 }, Camel { id: 3 }],
             players: vec![Player::new(), Player::new()],
             circuit: vec![vec![]; 17],

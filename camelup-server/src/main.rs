@@ -124,25 +124,8 @@ impl Handler for Server {
 }
 
 fn main() {
+    // on add player to game ensure id is not repeated
     let game = Arc::new(Mutex::new(game::Game::new()));
-
-    //println!("{}", Game::is_player_turn(0, &game));
-    // Option 1. Throw dice.
-    // let dice = pyramid::throw_dice(&mut game.dice_pool);
-    // race_circuit::move_camel(dice.camel_id, dice.number, &mut game.circuit);
-    // game.players[0].points += 1;
-    // Option 2. Buy card.
-    //round_market::get_card(1, 3, &mut round_cards);
-
-    // if pyramid::is_the_round_ended(&mut dicePool) {
-    // TODO withdraw points
-    // round_market::give_out_points(&round_cards, &mut players, &circuit);
-    // TODO restore betting cards
-    // dicePool = pyramid::new_dice_pool();
-    // }
-    //    race_circuit::move_camel(0, 1, &mut circuit);
-
-    //println!("{:?}", game);
 
     listen("127.0.0.1:3000", |out| Server {
         out: out,
