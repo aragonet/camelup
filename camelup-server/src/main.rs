@@ -2,14 +2,14 @@ mod game;
 mod util;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 use ws::{listen, CloseCode, Handler, Message, Result, Sender};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct GameRequest {
     game_id: String,
-    new: bool,
+    new_game: bool,
     new_player: bool,
     throw_dice: bool,
     player_id: String,
@@ -25,10 +25,12 @@ struct GameResponse {
 
 struct Server {
     out: Sender,
-    games: Arc<HashMap<String, Mutex<game::Game>>>,
+    games: Arc<Mutex<HashMap<String, game::Game>>>,
 }
 impl Handler for Server {
     fn on_message(&mut self, msg: Message) -> Result<()> {
+        let mut games_guard = self.games.lock().unwrap();
+
         let body = msg.into_text()?;
         let request: GameRequest = match serde_json::from_str(&body) {
             Ok(v) => v,
@@ -36,8 +38,7 @@ impl Handler for Server {
                 return self.out.send(
                     serde_json::to_string(&GameResponse {
                         error_code: 1,
-                        game: game::Game::new(String::from("a")),
-                        // game: game_guard.clone(),
+                        game: game::Game::new(String::from("")),
                         player_id: String::from(""),
                     })
                     .unwrap(),
@@ -48,28 +49,27 @@ impl Handler for Server {
         println!("GameRequest: {:?}", request);
         let mut player_id = request.player_id.clone();
 
-        let mut game_guard: game::Game;
-        let mut response_code = 0;
-        if request.new {
-            let now = SystemTime::now();
-            let timestamp = now.duration_since(UNIX_EPOCH).expect("TIME PROBLEM");
-            let timestamp: String = String::from(timestamp.as_nanos().to_string());
-            let game_id = timestamp + &util::random_string(16);
-            // Create new game and return it
-            let game_guard = game::Game::new(game_id.clone());
-            // TODO this is not thread safe!!!
-            self.games.insert(game_id.clone(), Mutex::new(game_guard));
-
-        // TODO append game to games map
+        let mut game: game::Game;
+        let response_code;
+        if request.new_game {
+            // TODO uncomment when ready to deploy to production
+            // let now = SystemTime::now();
+            // let timestamp = now.duration_since(UNIX_EPOCH).expect("TIME PROBLEM");
+            // let timestamp: String = String::from(timestamp.as_nanos().to_string());
+            // let game_id = timestamp + &util::random_string(16);
+            let game_id = util::random_string(1);
+            game = game::Game::new(game_id.clone());
+            games_guard.insert(game_id.clone(), game.clone());
+            response_code = 0;
         } else {
-            let game = match self.games.get_mut(&request.game_id) {
-                Some(x) => *x,
+            let g = match games_guard.get_mut(&request.game_id) {
+                Some(x) => x,
                 None => {
+                    response_code = 2;
                     return self.out.send(
                         serde_json::to_string(&GameResponse {
                             error_code: response_code,
-                            // game: game_guard.clone(),
-                            game: game::Game::new(String::from("asd")),
+                            game: game::Game::new(String::from("")),
                             player_id: player_id,
                         })
                         .unwrap(),
@@ -77,20 +77,28 @@ impl Handler for Server {
                 }
             };
 
-            let mut game_guard = game.lock().unwrap();
-
             if request.new_player {
                 let mut player = game::Player::new();
-                let id = game_guard.add_player(player.id);
-                player.id = id;
+                let ok = g.add_player(&mut player);
+                if ok {
+                    player_id = player.id;
+                    response_code = 0;
+                } else {
+                    response_code = 1;
+                }
             } else {
-                response_code = game_step(&mut game_guard, &request);
+                response_code = game_step(g, &request);
             }
+
+            game = g.clone();
         }
+
+        sanitize(&mut game, &player_id);
+
         return self.out.send(
             serde_json::to_string(&GameResponse {
                 error_code: response_code,
-                game: game_guard.clone(),
+                game: game.clone(),
                 player_id: player_id,
             })
             .unwrap(),
@@ -109,7 +117,7 @@ impl Handler for Server {
 fn main() {
     // TODO on add player to game ensure id is not repeated
     // TODO this should be a games map
-    let mut games = Arc::new(HashMap::new());
+    let games = Arc::new(Mutex::new(HashMap::new()));
 
     listen("127.0.0.1:3000", |out| Server {
         out: out,
@@ -118,7 +126,7 @@ fn main() {
     .unwrap();
 }
 
-fn game_step(game_guard: &mut MutexGuard<game::Game>, request: &GameRequest) -> u8 {
+fn game_step(game_guard: &mut game::Game, request: &GameRequest) -> u8 {
     if game_guard.game_ended {
         return 1;
     }
@@ -152,6 +160,8 @@ fn game_step(game_guard: &mut MutexGuard<game::Game>, request: &GameRequest) -> 
             request.get_camel_round_card,
             &mut game_guard.round_cards,
         );
+    } else {
+        return 1;
     }
 
     if game::race_circuit::camel_won(&game_guard.circuit) {
@@ -165,4 +175,12 @@ fn game_step(game_guard: &mut MutexGuard<game::Game>, request: &GameRequest) -> 
     }
 
     return 0;
+}
+
+fn sanitize(game: &mut game::Game, player_id: &String) {
+    for player in game.players.iter_mut() {
+        if player.id != *player_id {
+            player.id = String::from("");
+        }
+    }
 }

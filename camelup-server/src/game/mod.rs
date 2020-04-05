@@ -12,7 +12,6 @@ pub struct Camel {
 
 #[derive(Debug, Deserialize, Serialize, Clone, Hash)]
 pub struct Player {
-    #[serde(skip_serializing)]
     pub id: String,
 
     pub points: u8,
@@ -43,6 +42,7 @@ pub struct Game {
 
     pub round_cards: Vec<Vec<round_market::Card>>,
     pub player_turn: usize,
+    pub game_started: bool,
     pub game_ended: bool,
 }
 
@@ -52,16 +52,14 @@ impl Game {
             id: id,
             // TODO change camel and dices length to 6 when ready to deploy
             camels: vec![Camel { id: 1 }, Camel { id: 2 }, Camel { id: 3 }],
-            players: vec![Player::new(), Player::new()],
+            players: vec![],
             circuit: vec![vec![]; 17],
             dice_pool: pyramid::new_dice_pool(),
             round_cards: round_market::new_cards(),
             player_turn: 0,
+            game_started: false,
             game_ended: false,
         };
-        let mut rng = rand::thread_rng();
-        let first_player = Uniform::from(0..game.players.len()).sample(&mut rng);
-        game.player_turn = first_player + 1;
         validate_dice_and_camels(&pyramid::new_dice_pool(), &game.camels);
         validate_round_cards_and_camels(&round_market::new_cards(), &game.camels);
 
@@ -97,9 +95,24 @@ impl Game {
         }
     }
 
-    pub fn add_player(&mut self, id: String) -> String {
-        // TODO add player and check id is valid
-        return id;
+    pub fn add_player(&mut self, player: &mut Player) -> bool {
+        if self.players.len() == 6 {
+            return false;
+        }
+        while let Some(_) = self.players.iter().position(|x| x.id == *player.id) {
+            let new_player = Player::new();
+            player.id = new_player.id;
+        }
+
+        self.players.push(player.clone());
+        return true;
+    }
+
+    pub fn start_game(&mut self) {
+        let mut rng = rand::thread_rng();
+        let first_player = Uniform::from(0..self.players.len()).sample(&mut rng);
+        self.player_turn = first_player + 1;
+        self.game_started = true;
     }
 }
 
