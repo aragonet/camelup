@@ -8,12 +8,19 @@ use ws::{listen, CloseCode, Handler, Message, Result, Sender};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct GameRequest {
+    #[serde(default)]
     game_id: String,
+    #[serde(default)]
     new_game: bool,
+    #[serde(default)]
     new_player: bool,
+    #[serde(default)]
     start_game: bool,
+    #[serde(default)]
     throw_dice: bool,
+    #[serde(default)]
     player_id: String,
+    #[serde(default)]
     get_camel_round_card: u8,
 }
 
