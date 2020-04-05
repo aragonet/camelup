@@ -11,6 +11,7 @@ struct GameRequest {
     game_id: String,
     new_game: bool,
     new_player: bool,
+    start_game: bool,
     throw_dice: bool,
     player_id: String,
     get_camel_round_card: u8,
@@ -78,16 +79,30 @@ impl Handler for Server {
             };
 
             if request.new_player {
-                let mut player = game::Player::new();
-                let ok = g.add_player(&mut player);
-                if ok {
-                    player_id = player.id;
+                if g.game_started {
+                    response_code = 1;
+                } else {
+                    let mut player = game::Player::new();
+                    let ok = g.add_player(&mut player);
+                    if ok {
+                        player_id = player.id;
+                        response_code = 0;
+                    } else {
+                        response_code = 1;
+                    }
+                }
+            } else if request.start_game {
+                if g.start_game(&player_id) {
                     response_code = 0;
                 } else {
                     response_code = 1;
                 }
             } else {
-                response_code = game_step(g, &request);
+                if !g.game_started {
+                    response_code = game_step(g, &request);
+                } else {
+                    response_code = 1;
+                }
             }
 
             game = g.clone();

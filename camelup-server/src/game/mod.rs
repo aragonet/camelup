@@ -108,11 +108,20 @@ impl Game {
         return true;
     }
 
-    pub fn start_game(&mut self) {
+    pub fn start_game(&mut self, player_id: &String) -> bool {
+        if self.players.len() < 2 || self.game_started || self.game_ended {
+            return false;
+        }
+
+        if self.players[0].id != *player_id {
+            return false;
+        }
+
         let mut rng = rand::thread_rng();
         let first_player = Uniform::from(0..self.players.len()).sample(&mut rng);
         self.player_turn = first_player + 1;
         self.game_started = true;
+        return true;
     }
 }
 
