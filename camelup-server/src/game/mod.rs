@@ -13,7 +13,6 @@ pub struct Camel {
 #[derive(Debug, Deserialize, Serialize, Clone, Hash)]
 pub struct Player {
     pub id: String,
-
     pub points: u8,
 }
 

@@ -6,21 +6,14 @@ use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 use ws::{listen, CloseCode, Handler, Message, Result, Sender};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 struct GameRequest {
-    #[serde(default)]
     game_id: String,
-    #[serde(default)]
     new_game: bool,
-    #[serde(default)]
     new_player: bool,
-    #[serde(default)]
     start_game: bool,
-    #[serde(default)]
     throw_dice: bool,
-    #[serde(default)]
     player_id: String,
-    #[serde(default)]
     get_camel_round_card: u8,
 }
 
@@ -34,6 +27,7 @@ struct GameResponse {
 struct Server {
     out: Sender,
     games: Arc<Mutex<HashMap<String, game::Game>>>,
+    connections: Arc<Mutex<HashMap<String, Vec<Sender>>>>,
 }
 impl Handler for Server {
     fn on_message(&mut self, msg: Message) -> Result<()> {
@@ -85,6 +79,8 @@ impl Handler for Server {
                 }
             };
 
+            save_game_connection(&self.out, &g.id, &mut self.connections.lock().unwrap());
+
             if request.new_player {
                 if g.game_started {
                     response_code = 1;
@@ -113,10 +109,33 @@ impl Handler for Server {
             }
 
             game = g.clone();
+            if let Some(conns) = self.connections.lock().unwrap().get(&game.id) {
+                for i in 0..conns.len() {
+                    let conn = conns.get(i).unwrap();
+                    if conn == &self.out {
+                        continue;
+                    }
+
+                    let player = g.players.get(i).unwrap();
+                    let mut game_aux = game.clone();
+                    sanitize(&mut game_aux, &player.id);
+
+                    match conn.send(
+                        serde_json::to_string(&GameResponse {
+                            error_code: response_code,
+                            game: game.clone(),
+                            player_id: String::from(""),
+                        })
+                        .unwrap(),
+                    ) {
+                        Ok(_) => (),
+                        Err(e) => println!("Error: {:?}", e),
+                    }
+                }
+            }
         }
 
         sanitize(&mut game, &player_id);
-
         return self.out.send(
             serde_json::to_string(&GameResponse {
                 error_code: response_code,
@@ -140,10 +159,12 @@ fn main() {
     // TODO on add player to game ensure id is not repeated
     // TODO this should be a games map
     let games = Arc::new(Mutex::new(HashMap::new()));
+    let conns = Arc::new(Mutex::new(HashMap::new()));
 
     listen("127.0.0.1:3000", |out| Server {
         out: out,
         games: games.clone(),
+        connections: conns.clone(),
     })
     .unwrap();
 }
@@ -204,5 +225,22 @@ fn sanitize(game: &mut game::Game, player_id: &String) {
         if player.id != *player_id {
             player.id = String::from("");
         }
+    }
+}
+
+fn save_game_connection(
+    conn: &Sender,
+    game_id: &String,
+    connections: &mut HashMap<String, Vec<Sender>>,
+) {
+    if let Some(game_connections) = connections.get_mut(game_id) {
+        for c in game_connections.iter() {
+            if c == conn {
+                return;
+            }
+        }
+        game_connections.push(conn.clone());
+    } else {
+        connections.insert(game_id.clone(), vec![conn.clone()]);
     }
 }
