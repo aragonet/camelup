@@ -1,6 +1,7 @@
 pub mod pyramid;
 pub mod race_circuit;
 pub mod round_market;
+use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
 use rand::distributions::{Alphanumeric, Distribution, Uniform};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
@@ -36,13 +37,27 @@ pub struct Game {
     pub players: Vec<Player>,
     pub circuit: Vec<Vec<u8>>,
 
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     pub dice_pool: Vec<u8>,
 
     pub round_cards: Vec<Vec<round_market::Card>>,
     pub player_turn: usize,
     pub game_started: bool,
     pub game_ended: bool,
+
+    #[serde(skip)]
+    pub last_update: LastUpdate,
+}
+#[derive(Debug, Clone, Hash)]
+pub struct LastUpdate {
+    instant: DateTime<Utc>,
+}
+impl Default for LastUpdate {
+    fn default() -> Self {
+        LastUpdate {
+            instant: Utc.ymd(2001, 9, 9).and_hms_milli(0, 00, 00, 000),
+        }
+    }
 }
 
 impl Game {
@@ -58,6 +73,9 @@ impl Game {
             player_turn: 0,
             game_started: false,
             game_ended: false,
+            last_update: LastUpdate {
+                instant: Utc::now(),
+            },
         };
         validate_dice_and_camels(&pyramid::new_dice_pool(), &game.camels);
         validate_round_cards_and_camels(&round_market::new_cards(), &game.camels);
@@ -121,6 +139,15 @@ impl Game {
         self.player_turn = first_player + 1;
         self.game_started = true;
         return true;
+    }
+
+    pub fn update_time(&mut self) {
+        self.last_update.instant = Utc::now();
+    }
+
+    pub fn spoiled_connection(&self) -> bool {
+        let last_valid_connection = Utc::now() - Duration::seconds(20);
+        self.last_update.instant.le(&last_valid_connection)
     }
 }
 

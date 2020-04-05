@@ -4,6 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    thread,
+    time::{Duration, Instant},
+};
 use ws::{listen, CloseCode, Handler, Message, Result, Sender};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -108,6 +112,7 @@ impl Handler for Server {
                 }
             }
 
+            g.update_time();
             game = g.clone();
             if let Some(conns) = self.connections.lock().unwrap().get(&game.id) {
                 for i in 0..conns.len() {
@@ -160,6 +165,20 @@ fn main() {
     // TODO this should be a games map
     let games = Arc::new(Mutex::new(HashMap::new()));
     let conns = Arc::new(Mutex::new(HashMap::new()));
+
+    {
+        let g = games.clone();
+        let c = conns.clone();
+        // TODO if this thread panics, main stills working.
+        thread::spawn(move || {
+            // let wait_time = Duration::from_secs(60 * 60);
+            let wait_time = Duration::from_secs(10);
+            loop {
+                clear_unused_games(g.clone(), c.clone());
+                thread::sleep(wait_time);
+            }
+        });
+    }
 
     listen("127.0.0.1:3000", |out| Server {
         out: out,
@@ -242,5 +261,26 @@ fn save_game_connection(
         game_connections.push(conn.clone());
     } else {
         connections.insert(game_id.clone(), vec![conn.clone()]);
+    }
+}
+
+fn clear_unused_games(
+    games: Arc<Mutex<HashMap<String, game::Game>>>,
+    connections: Arc<Mutex<HashMap<String, Vec<Sender>>>>,
+) {
+    let mut games = games.lock().unwrap();
+    let mut connections = connections.lock().unwrap();
+
+    for game_t in &mut games.clone().iter_mut() {
+        if game_t.1.spoiled_connection() {
+            if let Some(conns) = connections.get(game_t.0) {
+                for conn in conns.into_iter() {
+                    conn.close(CloseCode::Away);
+                }
+
+                connections.remove_entry(game_t.0);
+            }
+            games.remove_entry(game_t.0);
+        }
     }
 }
