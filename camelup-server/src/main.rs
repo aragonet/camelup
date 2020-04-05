@@ -171,8 +171,7 @@ fn main() {
         let c = conns.clone();
         // TODO if this thread panics, main stills working.
         thread::spawn(move || {
-            // let wait_time = Duration::from_secs(60 * 60);
-            let wait_time = Duration::from_secs(10);
+            let wait_time = Duration::from_secs(60 * 5);
             loop {
                 clear_unused_games(g.clone(), c.clone());
                 thread::sleep(wait_time);

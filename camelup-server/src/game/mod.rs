@@ -146,7 +146,11 @@ impl Game {
     }
 
     pub fn spoiled_connection(&self) -> bool {
-        let last_valid_connection = Utc::now() - Duration::seconds(20);
+        let mut seconds = 60 * 60;
+        if self.game_ended {
+            seconds = 60 * 5;
+        }
+        let last_valid_connection = Utc::now() - Duration::seconds(seconds);
         self.last_update.instant.le(&last_valid_connection)
     }
 }
