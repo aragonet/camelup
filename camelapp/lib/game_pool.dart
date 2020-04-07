@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:camelapp/board_game.dart';
 import 'package:camelapp/models/models.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,8 +36,15 @@ class _GamePoolState extends State<GamePool> {
 
   @override
   Widget build(BuildContext context) {
-    var players = buildPlayers();
+    if (this.widget.gameState.game.playerTurn == 0) {
+      return buildGamePool();
+    }
 
+    return BoardGame();
+  }
+
+  Widget buildGamePool() {
+    var players = buildPlayers();
     return Center(
       child: Container(
         width: 300,
