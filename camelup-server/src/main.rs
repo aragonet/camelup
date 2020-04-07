@@ -128,7 +128,7 @@ impl Handler for Server {
                     match conn.send(
                         serde_json::to_string(&GameResponse {
                             error_code: response_code,
-                            game: game.clone(),
+                            game: game_aux.clone(),
                             player_id: String::from(""),
                         })
                         .unwrap(),

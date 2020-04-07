@@ -14,16 +14,20 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   WebSocketChannel channel;
   String myPlayer;
+  TextEditingController _gameCtrl;
 
   @override
   void initState() {
     super.initState();
 
-    stablishConnection();
+    channel = HtmlWebSocketChannel.connect('ws://localhost:3000');
+    _gameCtrl = TextEditingController();
   }
 
-  stablishConnection() {
-    channel = HtmlWebSocketChannel.connect('ws://localhost:3000');
+  @override
+  void dispose() {
+    _gameCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -38,31 +42,64 @@ class _DashboardState extends State<Dashboard> {
               String message = snapshot.data;
               GameState gameState = GameState.fromJson(jsonDecode(message));
               if (gameState.playerId != "") {
-                setState(() {
-                  myPlayer = gameState.playerId;
-                });
+                myPlayer = gameState.playerId;
               }
-              return GamePool(
-                channel: channel,
-                gameState: gameState,
-                player: myPlayer,
-              );
+
+              if (gameState.game.id != "") {
+                return GamePool(
+                  channel: channel,
+                  gameState: gameState,
+                  player: myPlayer,
+                );
+              }
             }
             return Center(
-              child: RaisedButton(
-                child: Text(
-                  "Començar una partida",
-                  style: TextStyle(
-                      fontSize: 24,
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.w500),
-                ),
-                onPressed: () {
-                  var d = jsonEncode(GameRequest(newGame: true));
-                  print("CREATE NEW GAME $d");
-                  channel.sink.add(d);
-                },
-                color: Theme.of(context).primaryColor,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  RaisedButton(
+                    child: Text(
+                      "Començar una partida",
+                      style: TextStyle(
+                          fontSize: 24,
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    onPressed: () {
+                      var d = jsonEncode(GameRequest(newGame: true));
+                      print("CREATE NEW GAME $d");
+                      channel.sink.add(d);
+                    },
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  SizedBox(height: 56),
+                  Container(
+                    width: 300,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Flexible(
+                          child: TextField(
+                            decoration:
+                                InputDecoration(hintText: "Id de partida"),
+                            controller: _gameCtrl,
+                          ),
+                        ),
+                        OutlineButton(
+                          onPressed: () {
+                            print(_gameCtrl.text);
+                            channel.sink.add(jsonEncode(GameRequest(
+                              gameId: _gameCtrl.text,
+                              newPlayer: true,
+                            )));
+                          },
+                          child: Text("Unirse"),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ],
+                    ),
+                  )
+                ],
               ),
             );
           },
