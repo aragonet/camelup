@@ -40,7 +40,11 @@ class _GamePoolState extends State<GamePool> {
       return buildGamePool();
     }
 
-    return BoardGame();
+    return BoardGame(
+      gameState: this.widget.gameState,
+      channel: this.widget.channel,
+      playerId: this.widget.player,
+    );
   }
 
   Widget buildGamePool() {

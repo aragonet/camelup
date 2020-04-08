@@ -107,7 +107,7 @@ impl Game {
 
     pub fn next_player(&mut self) {
         self.player_turn += 1;
-        if self.player_turn >= self.players.len() as usize {
+        if self.player_turn > self.players.len() as usize {
             self.player_turn = 1;
         }
     }

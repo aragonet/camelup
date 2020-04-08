@@ -105,10 +105,10 @@ impl Handler for Server {
                     response_code = 1;
                 }
             } else {
-                if !g.game_started {
+                if g.game_started {
                     response_code = game_step(g, &request);
                 } else {
-                    response_code = 1;
+                    response_code = 8;
                 }
             }
 
@@ -189,7 +189,7 @@ fn main() {
 
 fn game_step(game_guard: &mut game::Game, request: &GameRequest) -> u8 {
     if game_guard.game_ended {
-        return 1;
+        return 3;
     }
 
     let player_id = match game_guard
@@ -199,12 +199,12 @@ fn game_step(game_guard: &mut game::Game, request: &GameRequest) -> u8 {
     {
         Some(id) => (id + 1) as u8,
         None => {
-            return 1;
+            return 4;
         }
     };
 
     if !game_guard.is_player_turn(player_id) {
-        return 1;
+        return 5;
     }
 
     if request.throw_dice {
@@ -213,7 +213,7 @@ fn game_step(game_guard: &mut game::Game, request: &GameRequest) -> u8 {
         game::race_circuit::move_camel(dice.camel_id, dice.number, &mut game_guard.circuit);
     } else if request.get_camel_round_card != 0 {
         if request.get_camel_round_card >= game_guard.camels.len() as u8 {
-            return 1;
+            return 6;
         }
 
         game::round_market::get_card(
@@ -222,7 +222,7 @@ fn game_step(game_guard: &mut game::Game, request: &GameRequest) -> u8 {
             &mut game_guard.round_cards,
         );
     } else {
-        return 1;
+        return 7;
     }
 
     if game::race_circuit::camel_won(&game_guard.circuit) {

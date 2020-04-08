@@ -21,13 +21,13 @@ class Game {
   String id;
   List<Camel> camels;
   List<Player> players;
-  List<List<int>> ciurcuit;
+  List<List<int>> circuit;
   List<List<RoundMarketCard>> roundCards;
   int playerTurn;
   bool gameStarted;
   bool gameEnded;
 
-  Game(this.id, this.camels, this.players, this.ciurcuit, this.roundCards,
+  Game(this.id, this.camels, this.players, this.circuit, this.roundCards,
       this.playerTurn, this.gameStarted, this.gameEnded);
 
   factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);

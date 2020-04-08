@@ -32,7 +32,7 @@ Game _$GameFromJson(Map<String, dynamic> json) {
         ?.map((e) =>
             e == null ? null : Player.fromJson(e as Map<String, dynamic>))
         ?.toList(),
-    (json['ciurcuit'] as List)
+    (json['circuit'] as List)
         ?.map((e) => (e as List)?.map((e) => e as int)?.toList())
         ?.toList(),
     (json['round_cards'] as List)
@@ -52,7 +52,7 @@ Map<String, dynamic> _$GameToJson(Game instance) => <String, dynamic>{
       'id': instance.id,
       'camels': instance.camels?.map((e) => e?.toJson())?.toList(),
       'players': instance.players?.map((e) => e?.toJson())?.toList(),
-      'ciurcuit': instance.ciurcuit,
+      'circuit': instance.circuit,
       'round_cards': instance.roundCards
           ?.map((e) => e?.map((e) => e?.toJson())?.toList())
           ?.toList(),

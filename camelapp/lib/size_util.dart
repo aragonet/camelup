@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class SizeUtil {
-  static const RATIO = 1.6; // Multiply for width. Divide for height
+  static const RATIO = 2.2; // Multiply for width. Divide for height
 
   //logic size in device
   static Size _logicSize;
