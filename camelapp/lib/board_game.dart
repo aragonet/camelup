@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:camelapp/models/models.dart';
 import 'package:camelapp/open_painter.dart';
+import 'package:camelapp/players_info.dart';
 import 'package:camelapp/size_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -44,20 +45,24 @@ class BoardGame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SizeUtil.size = MediaQuery.of(context).size;
-
-    return Stack(
+    return ListView(
       children: <Widget>[
-        Image.asset(
-          'assets/board.jpg',
-          width: SizeUtil.getX(100),
-          height: SizeUtil.getY(100),
-          fit: BoxFit.cover,
+        Stack(
+          children: <Widget>[
+            Image.asset(
+              'assets/board.jpg',
+              width: SizeUtil.getX(100),
+              height: SizeUtil.getY(100),
+              fit: BoxFit.cover,
+            ),
+            ...buildCamels(),
+            //buildCamel(0, box: 0, height: 1)
+            buildPyramid(),
+            ...buildRoundCards(),
+            ...buildDices(),
+          ],
         ),
-        ...buildCamels(),
-        //buildCamel(0, box: 0, height: 1)
-        buildPyramid(),
-        ...buildRoundCards(),
-        ...buildDices(),
+        PlayersInfo(gameState: this.gameState, playerId: this.playerId),
       ],
     );
   }
@@ -86,21 +91,6 @@ class BoardGame extends StatelessWidget {
           height: SizeUtil.getY(5),
           color: getCamelColor(camelId)),
     );
-  }
-
-  Color getCamelColor(int camelId) {
-    switch (camelId) {
-      case 0:
-        return Colors.orange;
-      case 1:
-        return Colors.white;
-      case 2:
-        return Colors.yellow;
-      case 3:
-        return Colors.green;
-      default:
-        return Colors.blue;
-    }
   }
 
   Widget buildPyramid() {
@@ -201,5 +191,20 @@ class BoardGame extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Color getCamelColor(int camelId) {
+  switch (camelId) {
+    case 0:
+      return Colors.orange;
+    case 1:
+      return Colors.white;
+    case 2:
+      return Colors.yellow;
+    case 3:
+      return Colors.green;
+    default:
+      return Colors.blue;
   }
 }

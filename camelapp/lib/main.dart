@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.amber,
       ),
       home: Dashboard(),
-      // home: MyHomePage(),
+      //home: MyHomePage(),
     );
   }
 }
@@ -83,42 +83,127 @@ class _MyCanvasState extends State<MyCanvas> {
   @override
   Widget build(BuildContext context) {
     SizeUtil.size = MediaQuery.of(context).size;
-    return Stack(
+
+    return ListView(
       children: <Widget>[
-        Image.asset(
-          'assets/board.jpg',
-          width: SizeUtil.getX(100),
-          height: SizeUtil.getY(100),
-          fit: BoxFit.cover,
-        ),
-        Positioned(
-          top: SizeUtil.getY(32),
-          left: SizeUtil.getX(18),
-          child: GestureDetector(
-            onTap: () {
-              print("DO SOMETHING");
-            },
-            child: Container(
-              color: Colors.brown,
-              width: SizeUtil.getX(17.5),
-              height: SizeUtil.getY(35),
+        Stack(
+          children: <Widget>[
+            Image.asset(
+              'assets/board.jpg',
+              width: SizeUtil.getX(100),
+              height: SizeUtil.getY(100),
+              fit: BoxFit.cover,
             ),
+            Positioned(
+              top: SizeUtil.getY(32),
+              left: SizeUtil.getX(18),
+              child: GestureDetector(
+                onTap: () {
+                  print("DO SOMETHING");
+                },
+                child: Container(
+                  color: Colors.brown,
+                  width: SizeUtil.getX(17.5),
+                  height: SizeUtil.getY(35),
+                ),
+              ),
+            ),
+            //...buildCamels(),
+            buildCamel(1, box: 16, height: 0, total: 1),
+            buildRoundCard(0, 5),
+            buildRoundCard(1, 5),
+            buildRoundCard(2, 5),
+            buildRoundCard(3, 5),
+            buildRoundCard(4, 5),
+            buildDice(0, 1),
+            buildDice(1, 1),
+            buildDice(2, 1),
+            buildDice(3, 1),
+            buildDice(4, 1),
+          ],
+        ),
+        Container(
+          color: Color(0xfff3e1c9),
+          child: Column(
+            children: <Widget>[
+              Container(
+                decoration: BoxDecoration(
+                  color: Color(0xffffd700),
+                  borderRadius: new BorderRadius.only(
+                    bottomLeft: const Radius.circular(17.0),
+                    bottomRight: const Radius.circular(17.0),
+                  ),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 2.0, horizontal: 40),
+                  child: Text("Es el teu torn"),
+                ),
+              ),
+              // Row(
+              //   children: <Widget>[
+              //     Expanded(
+              //       child: Container(
+              //           color: Color(0xfff3e1c9), child: buildPlayer(0, 0)),
+              //     ),
+              //   ],
+              // ),
+              Row(
+                children: <Widget>[
+                  buildPlayer(0, 0),
+                ],
+              ),
+            ],
           ),
         ),
-        //...buildCamels(),
-        buildCamel(1, box: 16, height: 0, total: 1),
-        buildRoundCard(0, 5),
-        buildRoundCard(1, 5),
-        buildRoundCard(2, 5),
-        buildRoundCard(3, 5),
-        buildRoundCard(4, 5),
-        buildDice(0, 1),
-        buildDice(1, 1),
-        buildDice(2, 1),
-        buildDice(3, 1),
-        buildDice(4, 1),
       ],
     );
+  }
+
+  Widget buildPlayer(int player_id, int points) {
+    return Wrap(
+      spacing: 14,
+      alignment: WrapAlignment.start,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: <Widget>[
+        Container(
+          height: 50,
+          width: 10,
+          color: getPlayerColor(player_id),
+        ),
+        Text("$points pt", style: TextStyle(fontSize: 24)),
+        Container(
+          width: 30,
+          height: 35,
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.all(Radius.circular(3)),
+          ),
+          child: Center(child: Text("5", style: TextStyle(fontSize: 24))),
+        ),
+      ],
+    );
+  }
+
+  Color getPlayerColor(int player_id) {
+    switch (player_id) {
+      case 0:
+        return Colors.indigo;
+      case 1:
+        return Colors.pink;
+      case 2:
+        return Colors.teal;
+      case 3:
+        return Colors.purple;
+      case 4:
+        return Colors.grey;
+      case 5:
+        return Colors.amber;
+      case 6:
+        return Colors.red;
+      case 7:
+        return Colors.cyan;
+    }
   }
 
   Widget buildDice(int camelId, int value) {
