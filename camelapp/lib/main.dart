@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.amber,
       ),
       home: Dashboard(),
-      //home: MyHomePage(),
+      // home: MyHomePage(),
     );
   }
 }
@@ -107,7 +107,77 @@ class _MyCanvasState extends State<MyCanvas> {
         ),
         //...buildCamels(),
         buildCamel(1, box: 16, height: 0, total: 1),
+        buildRoundCard(0, 5),
+        buildRoundCard(1, 5),
+        buildRoundCard(2, 5),
+        buildRoundCard(3, 5),
+        buildRoundCard(4, 5),
+        buildDice(0, 1),
+        buildDice(1, 1),
+        buildDice(2, 1),
+        buildDice(3, 1),
+        buildDice(4, 1),
       ],
+    );
+  }
+
+  Widget buildDice(int camelId, int value) {
+    var _dicePosition = [
+      Position(68.5, 43.5),
+      Position(62, 60),
+      Position(67, 54),
+      Position(66.5, 33.5),
+      Position(62, 27),
+    ];
+    var position = _dicePosition[camelId];
+    return Positioned(
+      left: SizeUtil.getX(position.x),
+      top: SizeUtil.getY(position.y),
+      child: Text(
+        "$value",
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 30,
+          color: Color(0xff293749),
+          //color: getCamelColor(camelId),
+        ),
+      ),
+    );
+  }
+
+  Widget buildRoundCard(int camelId, int value) {
+    var _cardPosition = [
+      Position(74.7, 37),
+      Position(62.4, 71.5),
+      Position(70.5, 58.6),
+      Position(70.5, 15),
+      Position(62.4, 3),
+    ];
+    var _cardRotation = [1.58, 2.6, 2.24, 0.9, 0.5];
+    var position = _cardPosition[camelId];
+    var angle = _cardRotation[camelId];
+    return Positioned(
+      left: SizeUtil.getX(position.x),
+      top: SizeUtil.getY(position.y),
+      child: Transform.rotate(
+        angle: angle,
+        child: InkWell(
+          onTap: () {
+            print("Get card camel $camelId");
+          },
+          child: Container(
+            width: SizeUtil.getX(8),
+            height: SizeUtil.getY(24),
+            //color: getCamelColor(camelId),
+            child: Center(
+              child: Text(
+                "$value",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -145,13 +215,13 @@ class _MyCanvasState extends State<MyCanvas> {
   Color getCamelColor(int camelId) {
     switch (camelId) {
       case 0:
-        return Colors.green;
+        return Colors.orange;
       case 1:
         return Colors.white;
       case 2:
         return Colors.yellow;
       case 3:
-        return Colors.orange;
+        return Colors.green;
       default:
         return Colors.blue;
     }

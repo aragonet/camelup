@@ -209,10 +209,11 @@ fn game_step(game_guard: &mut game::Game, request: &GameRequest) -> u8 {
 
     if request.throw_dice {
         game_guard.players[(player_id - 1) as usize].points += 1;
-        let dice = game::pyramid::throw_dice(&mut game_guard.dice_pool);
+        let dice =
+            game::pyramid::throw_dice(&mut game_guard.dice_pool, &mut game_guard.thrown_dices);
         game::race_circuit::move_camel(dice.camel_id, dice.number, &mut game_guard.circuit);
     } else if request.get_camel_round_card != 0 {
-        if request.get_camel_round_card >= game_guard.camels.len() as u8 {
+        if request.get_camel_round_card > game_guard.camels.len() as u8 {
             return 6;
         }
 

@@ -45,7 +45,9 @@ Game _$GameFromJson(Map<String, dynamic> json) {
     json['player_turn'] as int,
     json['game_started'] as bool,
     json['game_ended'] as bool,
-  );
+  )..thrownDices = (json['thrown_dices'] as List)
+      ?.map((e) => e == null ? null : Dice.fromJson(e as Map<String, dynamic>))
+      ?.toList();
 }
 
 Map<String, dynamic> _$GameToJson(Game instance) => <String, dynamic>{
@@ -53,6 +55,7 @@ Map<String, dynamic> _$GameToJson(Game instance) => <String, dynamic>{
       'camels': instance.camels?.map((e) => e?.toJson())?.toList(),
       'players': instance.players?.map((e) => e?.toJson())?.toList(),
       'circuit': instance.circuit,
+      'thrown_dices': instance.thrownDices?.map((e) => e?.toJson())?.toList(),
       'round_cards': instance.roundCards
           ?.map((e) => e?.map((e) => e?.toJson())?.toList())
           ?.toList(),
@@ -94,6 +97,18 @@ Camel _$CamelFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$CamelToJson(Camel instance) => <String, dynamic>{
       'id': instance.id,
+    };
+
+Dice _$DiceFromJson(Map<String, dynamic> json) {
+  return Dice(
+    json['number'] as int,
+    json['camel_id'] as int,
+  );
+}
+
+Map<String, dynamic> _$DiceToJson(Dice instance) => <String, dynamic>{
+      'number': instance.number,
+      'camel_id': instance.camelId,
     };
 
 GameRequest _$GameRequestFromJson(Map<String, dynamic> json) {

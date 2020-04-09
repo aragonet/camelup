@@ -39,6 +39,7 @@ pub struct Game {
 
     #[serde(skip)]
     pub dice_pool: Vec<u8>,
+    pub thrown_dices: Vec<pyramid::Dice>,
 
     pub round_cards: Vec<Vec<round_market::Card>>,
     pub player_turn: usize,
@@ -69,6 +70,7 @@ impl Game {
             players: vec![],
             circuit: vec![vec![]; 17],
             dice_pool: pyramid::new_dice_pool(),
+            thrown_dices: vec![],
             round_cards: round_market::new_cards(),
             player_turn: 0,
             game_started: false,
@@ -81,7 +83,7 @@ impl Game {
         validate_round_cards_and_camels(&round_market::new_cards(), &game.camels);
 
         for i in 0..game.camels.len() {
-            let dice = pyramid::throw_dice(&mut game.dice_pool);
+            let dice = pyramid::throw_dice(&mut game.dice_pool, &mut vec![]);
             let box_index = (dice.number - 1) as usize;
             game.circuit[box_index].push(game.camels[i].id);
         }
@@ -97,6 +99,7 @@ impl Game {
     pub fn on_round_ended(&mut self) {
         round_market::give_out_points(&self.round_cards, &mut self.players, &self.circuit);
         self.dice_pool = pyramid::new_dice_pool();
+        self.thrown_dices = vec![];
         self.round_cards = round_market::new_cards();
     }
 

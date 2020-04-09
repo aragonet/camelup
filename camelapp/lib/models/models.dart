@@ -22,6 +22,7 @@ class Game {
   List<Camel> camels;
   List<Player> players;
   List<List<int>> circuit;
+  List<Dice> thrownDices;
   List<List<RoundMarketCard>> roundCards;
   int playerTurn;
   bool gameStarted;
@@ -69,6 +70,18 @@ class Camel {
   factory Camel.fromJson(Map<String, dynamic> json) => _$CamelFromJson(json);
 
   Map<String, dynamic> toJson() => _$CamelToJson(this);
+}
+
+@JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
+class Dice {
+  int number;
+  int camelId;
+
+  Dice(this.number, this.camelId);
+
+  factory Dice.fromJson(Map<String, dynamic> json) => _$DiceFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DiceToJson(this);
 }
 
 @JsonSerializable(explicitToJson: true, fieldRename: FieldRename.snake)
