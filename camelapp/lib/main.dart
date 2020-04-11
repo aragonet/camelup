@@ -120,6 +120,7 @@ class _MyCanvasState extends State<MyCanvas> {
             buildDice(2, 1),
             buildDice(3, 1),
             buildDice(4, 1),
+            buildGameOver(),
           ],
         ),
         Container(
@@ -158,6 +159,30 @@ class _MyCanvasState extends State<MyCanvas> {
         ),
       ],
     );
+  }
+
+  Widget buildGameOver() {
+    // if (!this.gameState.game.gameEnded){
+    //   return SizedBox();
+    // }
+
+    // return Positioned(
+    //   top: SizeUtil.getY(50),
+    //   left: SizeUtil.getX(50),
+    //   child: Text(
+    //     "Fi del joc",
+    //     style: TextStyle(fontSize: 55),
+    //   ),
+    // );
+    return Positioned(
+        top: SizeUtil.getY(30),
+        left: 0,
+        right: 0,
+        child: Center(
+            child: Text(
+          "Fi del joc",
+          style: TextStyle(fontSize: 55),
+        )));
   }
 
   Widget buildPlayer(int player_id, int points) {

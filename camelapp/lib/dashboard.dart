@@ -20,12 +20,14 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
 
-    channel = HtmlWebSocketChannel.connect('ws://localhost:3000');
+    channel = HtmlWebSocketChannel.connect('ws://37.14.220.112:8001');
+
     _gameCtrl = TextEditingController();
   }
 
   @override
   void dispose() {
+    channel.sink.close();
     _gameCtrl.dispose();
     super.dispose();
   }

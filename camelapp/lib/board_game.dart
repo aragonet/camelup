@@ -47,21 +47,20 @@ class BoardGame extends StatelessWidget {
     SizeUtil.size = MediaQuery.of(context).size;
     return ListView(
       children: <Widget>[
-        Stack(
-          children: <Widget>[
-            Image.asset(
-              'assets/board.jpg',
-              width: SizeUtil.getX(100),
-              height: SizeUtil.getY(100),
-              fit: BoxFit.cover,
-            ),
-            ...buildCamels(),
-            //buildCamel(0, box: 0, height: 1)
-            buildPyramid(),
-            ...buildRoundCards(),
-            ...buildDices(),
-          ],
-        ),
+        Stack(children: <Widget>[
+          Image.asset(
+            'assets/board.jpg',
+            width: SizeUtil.getX(100),
+            height: SizeUtil.getY(100),
+            fit: BoxFit.cover,
+          ),
+          ...buildCamels(),
+          //buildCamel(0, box: 0, height: 1)
+          buildPyramid(),
+          ...buildRoundCards(),
+          ...buildDices(),
+          buildGameOver()
+        ]),
         PlayersInfo(gameState: this.gameState, playerId: this.playerId),
       ],
     );
@@ -74,7 +73,8 @@ class BoardGame extends StatelessWidget {
       var box = this.gameState.game.circuit[i];
       for (var j = 0; j < box.length; j++) {
         var camelId = box[j];
-        camels.add(buildCamel(camelId, box: i, height: j, total: box.length));
+        camels
+            .add(buildCamel(camelId - 1, box: i, height: j, total: box.length));
       }
     }
 
@@ -165,7 +165,7 @@ class BoardGame extends StatelessWidget {
   List<Widget> buildDices() {
     var ds = <Widget>[];
     for (var dice in this.gameState.game.thrownDices) {
-      ds.add(buildDice(dice.camelId, dice.number));
+      ds.add(buildDice(dice.camelId - 1, dice.number));
     }
     return ds;
   }
@@ -188,6 +188,25 @@ class BoardGame extends StatelessWidget {
           fontWeight: FontWeight.w500,
           fontSize: 30,
           color: Color(0xff293749),
+        ),
+      ),
+    );
+  }
+
+  Widget buildGameOver() {
+    if (!this.gameState.game.gameEnded) {
+      return SizedBox();
+    }
+
+    return Positioned(
+      top: SizeUtil.getY(0),
+      bottom: SizeUtil.getY(100),
+      left: 0,
+      right: 0,
+      child: Container(
+        color: Colors.white54,
+        child: Center(
+          child: Text("Fi del joc"),
         ),
       ),
     );

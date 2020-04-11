@@ -179,7 +179,7 @@ fn main() {
         });
     }
 
-    listen("127.0.0.1:3000", |out| Server {
+    listen("0.0.0.0:8001", |out| Server {
         out: out,
         games: games.clone(),
         connections: conns.clone(),

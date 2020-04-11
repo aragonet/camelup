@@ -21,7 +21,7 @@ impl Player {
     pub fn new() -> Player {
         // TODO change random length to 8 when ready to deploy
         // TODO this should use util mod but don't know how to import
-        let rand_string: String = thread_rng().sample_iter(&Alphanumeric).take(1).collect();
+        let rand_string: String = thread_rng().sample_iter(&Alphanumeric).take(4).collect();
         return Player {
             id: rand_string,
             points: 0,
@@ -65,8 +65,14 @@ impl Game {
     pub fn new(id: String) -> Game {
         let mut game = Game {
             id: id,
-            // TODO change camel and dices length to 6 when ready to deploy
-            camels: vec![Camel { id: 1 }, Camel { id: 2 }, Camel { id: 3 }],
+            // TODO change camel and dices length to 5 when ready to deploy
+            camels: vec![
+                Camel { id: 1 },
+                Camel { id: 2 },
+                Camel { id: 3 },
+                Camel { id: 4 },
+                Camel { id: 5 },
+            ],
             players: vec![],
             circuit: vec![vec![]; 17],
             dice_pool: pyramid::new_dice_pool(),

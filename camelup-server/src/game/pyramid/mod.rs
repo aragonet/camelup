@@ -8,7 +8,7 @@ pub struct Dice {
 }
 
 pub fn new_dice_pool() -> Vec<u8> {
-    return vec![1, 2, 3];
+    return vec![1, 2, 3, 4, 5];
 }
 
 // It is expected that always will be available dices

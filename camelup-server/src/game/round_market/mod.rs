@@ -35,7 +35,7 @@ pub fn new_cards() -> Vec<Vec<Card>> {
                 player_id: 0
             },
         ];
-        3
+        5
     ];
 }
 
