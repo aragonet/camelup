@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:html';
+import 'dart:io';
 import 'package:camelapp/game_pool.dart';
 import 'package:camelapp/models/models.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,8 +21,8 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
-
-    channel = HtmlWebSocketChannel.connect('ws://37.14.220.112:8001');
+    var uri = Uri.parse(window.location.href);
+    channel = HtmlWebSocketChannel.connect('ws://${uri.host}:8001');
 
     _gameCtrl = TextEditingController();
   }
@@ -39,6 +41,31 @@ class _DashboardState extends State<Dashboard> {
         child: StreamBuilder(
           stream: channel.stream,
           builder: (context, snapshot) {
+            // return GamePool(
+            //   channel: channel,
+            //   gameState: GameState.fromJson(jsonDecode("""
+            //       {"error_code":0,
+            //       "game":
+            //         {"id":"m",
+            //         "camels":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":5}],
+            //         "players":[{"id":"6tSv","points":0},{"id":"","points":0}],
+            //         "circuit":[[2,3,4,5],[],[1],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+            //         "thrown_dices":[],
+            //         "round_cards":[
+            //           [{"points":5,"player_id":0},{"points":3,"player_id":0},{"points":2,"player_id":0}],
+            //           [{"points":5,"player_id":0},{"points":3,"player_id":0},{"points":2,"player_id":0}],
+            //           [{"points":5,"player_id":0},{"points":3,"player_id":0},{"points":2,"player_id":0}],
+            //           [{"points":5,"player_id":0},{"points":3,"player_id":0},{"points":2,"player_id":0}],
+            //           [{"points":5,"player_id":0},{"points":3,"player_id":0},{"points":2,"player_id":0}]
+            //         ],
+            //         "player_turn":1,
+            //         "game_started":true,
+            //         "game_ended":true
+            //         },
+            //       "player_id":"6tSv"
+            //     }""")),
+            //   player: myPlayer,
+            // );
             if (snapshot.hasData) {
               print(snapshot.data);
               String message = snapshot.data;

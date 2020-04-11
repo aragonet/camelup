@@ -16,14 +16,6 @@ class PlayersInfo extends StatelessWidget {
         children: <Widget>[
           buildYourTurnHint(),
           ...buildPlayerDetails(),
-          // Row(
-          //   children: <Widget>[
-          //     Expanded(
-          //       child: Container(
-          //           color: Color(0xfff3e1c9), child: buildPlayer(0, 0)),
-          //     ),
-          //   ],
-          // ),
         ],
       ),
     );

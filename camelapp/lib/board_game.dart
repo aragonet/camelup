@@ -55,7 +55,6 @@ class BoardGame extends StatelessWidget {
             fit: BoxFit.cover,
           ),
           ...buildCamels(),
-          //buildCamel(0, box: 0, height: 1)
           buildPyramid(),
           ...buildRoundCards(),
           ...buildDices(),
@@ -197,16 +196,18 @@ class BoardGame extends StatelessWidget {
     if (!this.gameState.game.gameEnded) {
       return SizedBox();
     }
-
     return Positioned(
       top: SizeUtil.getY(0),
-      bottom: SizeUtil.getY(100),
+      bottom: SizeUtil.getY(0),
       left: 0,
       right: 0,
       child: Container(
         color: Colors.white54,
         child: Center(
-          child: Text("Fi del joc"),
+          child: Text(
+            "Fi del joc",
+            style: TextStyle(fontSize: 64),
+          ),
         ),
       ),
     );
