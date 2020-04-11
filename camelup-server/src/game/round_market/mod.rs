@@ -62,9 +62,6 @@ pub fn give_out_points(
         }
     }
 
-    println!("1. {} 2. {}", first_camel, second_camel);
-    println!("{:?}", round_market_cards);
-
     let mut players_points: Vec<i8> = vec![0; players.len()];
     for camel_id in 0..round_market_cards.len() {
         let camel_cards = &round_market_cards[camel_id];
@@ -83,14 +80,12 @@ pub fn give_out_points(
         }
     }
 
-    println!("{:?}", players_points);
-
     for i in 0..players.len() {
-        let mut points = players_points[i];
+        let mut points = players[i].points as i8 + players_points[i];
         if points < 0 {
             points = 0;
         }
 
-        players[i].points += points as u8;
+        players[i].points = points as u8;
     }
 }

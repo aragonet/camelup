@@ -65,7 +65,6 @@ impl Game {
     pub fn new(id: String) -> Game {
         let mut game = Game {
             id: id,
-            // TODO change camel and dices length to 5 when ready to deploy
             camels: vec![
                 Camel { id: 1 },
                 Camel { id: 2 },
