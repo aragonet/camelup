@@ -1,5 +1,6 @@
 import 'package:camelapp/board_game.dart';
 import 'package:camelapp/models/models.dart';
+import 'package:camelapp/size_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -29,21 +30,23 @@ class PlayersInfo extends StatelessWidget {
         break;
       }
     }
-    if (this.gameState.game.playerTurn != playerIndex) {
-      return SizedBox();
-    }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xffffd700),
-        borderRadius: new BorderRadius.only(
-          bottomLeft: const Radius.circular(17.0),
-          bottomRight: const Radius.circular(17.0),
+    return AnimatedOpacity(
+      opacity: this.gameState.game.playerTurn != playerIndex ? 0.0 : 1.0,
+      duration: Duration(seconds: 3),
+      curve: Curves.easeInQuint,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xffffd700),
+          borderRadius: new BorderRadius.only(
+            bottomLeft: const Radius.circular(17.0),
+            bottomRight: const Radius.circular(17.0),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 40),
-        child: Text("Es el teu torn"),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 40),
+          child: Text("Es el teu torn"),
+        ),
       ),
     );
   }

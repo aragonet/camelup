@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:camelapp/message_notification.dart';
 import 'package:camelapp/models/models.dart';
 import 'package:camelapp/open_painter.dart';
 import 'package:camelapp/players_info.dart';
@@ -8,11 +9,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-class BoardGame extends StatelessWidget {
+class BoardGame extends StatefulWidget {
   final GameState gameState;
   final WebSocketChannel channel;
   final String playerId;
   BoardGame({this.gameState, this.channel, this.playerId});
+
+  @override
+  _BoardGameState createState() => _BoardGameState();
+}
+
+class _BoardGameState extends State<BoardGame> {
   final _boxPosition = [
     Position(49, 46),
     Position(49, 67),
@@ -40,7 +47,17 @@ class BoardGame extends StatelessWidget {
     Position(70.5, 15),
     Position(62.4, 3),
   ];
+
   final _cardRotation = [1.58, 2.6, 2.24, 0.9, 0.5];
+
+  String _message;
+
+  void showMessage(String msg) {
+    setState(() {
+      _message = msg;
+    });
+    print("Show message $msg");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +75,13 @@ class BoardGame extends StatelessWidget {
           buildPyramid(),
           ...buildRoundCards(),
           ...buildDices(),
-          buildGameOver()
+          buildGameOver(),
+          buildMessage(),
         ]),
-        PlayersInfo(gameState: this.gameState, playerId: this.playerId),
+        PlayersInfo(
+          gameState: this.widget.gameState,
+          playerId: this.widget.playerId,
+        ),
       ],
     );
   }
@@ -68,8 +89,8 @@ class BoardGame extends StatelessWidget {
   List<Widget> buildCamels() {
     var camels = <Widget>[];
 
-    for (var i = 0; i < this.gameState.game.circuit.length; i++) {
-      var box = this.gameState.game.circuit[i];
+    for (var i = 0; i < this.widget.gameState.game.circuit.length; i++) {
+      var box = this.widget.gameState.game.circuit[i];
       for (var j = 0; j < box.length; j++) {
         var camelId = box[j];
         camels
@@ -98,10 +119,10 @@ class BoardGame extends StatelessWidget {
       left: SizeUtil.getX(18),
       child: GestureDetector(
         onTap: () {
-          channel.sink.add(jsonEncode(GameRequest(
-            gameId: this.gameState.game.id,
+          widget.channel.sink.add(jsonEncode(GameRequest(
+            gameId: this.widget.gameState.game.id,
             throwDice: true,
-            playerId: this.playerId,
+            playerId: this.widget.playerId,
           )));
         },
         child: Container(
@@ -115,8 +136,8 @@ class BoardGame extends StatelessWidget {
 
   List<Widget> buildRoundCards() {
     var cards = <Widget>[];
-    for (var i = 0; i < this.gameState.game.roundCards.length; i++) {
-      var camelCards = this.gameState.game.roundCards[i];
+    for (var i = 0; i < this.widget.gameState.game.roundCards.length; i++) {
+      var camelCards = this.widget.gameState.game.roundCards[i];
       for (var j = 0; j < camelCards.length; j++) {
         var card = camelCards[j];
         if (card.playerId == 0) {
@@ -140,9 +161,9 @@ class BoardGame extends StatelessWidget {
           onTap: () {
             var camel = camelId + 1;
             print("Get card camel $camelId $camel");
-            channel.sink.add(jsonEncode(GameRequest(
-              gameId: this.gameState.game.id,
-              playerId: this.playerId,
+            widget.channel.sink.add(jsonEncode(GameRequest(
+              gameId: this.widget.gameState.game.id,
+              playerId: this.widget.playerId,
               getCamelRoundCard: camel,
             )));
           },
@@ -163,7 +184,7 @@ class BoardGame extends StatelessWidget {
 
   List<Widget> buildDices() {
     var ds = <Widget>[];
-    for (var dice in this.gameState.game.thrownDices) {
+    for (var dice in this.widget.gameState.game.thrownDices) {
       ds.add(buildDice(dice.camelId - 1, dice.number));
     }
     return ds;
@@ -193,7 +214,7 @@ class BoardGame extends StatelessWidget {
   }
 
   Widget buildGameOver() {
-    if (!this.gameState.game.gameEnded) {
+    if (!this.widget.gameState.game.gameEnded) {
       return SizedBox();
     }
     return Positioned(
@@ -208,6 +229,32 @@ class BoardGame extends StatelessWidget {
             "Fi del joc",
             style: TextStyle(fontSize: 64),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildMessage() {
+    var playerIndex = 0;
+    for (var i = 0; i < this.widget.gameState.game.players.length; i++) {
+      if (this.widget.gameState.game.players[i].id == this.widget.playerId) {
+        playerIndex = i + 1;
+        break;
+      }
+    }
+
+    if (this.widget.gameState.game.playerTurn != playerIndex) {
+      return SizedBox();
+    }
+
+    return Positioned(
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        child: Center(
+          child: MessageNotification(),
         ),
       ),
     );
