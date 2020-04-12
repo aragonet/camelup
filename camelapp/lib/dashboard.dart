@@ -99,73 +99,72 @@ class _DashboardState extends State<Dashboard> {
         child: StreamBuilder(
           stream: channel.stream,
           builder: (context, snapshot) {
-            // SystemChrome.setEnabledSystemUIOverlays([]);
-            return _defaultGame;
-            // if (snapshot.hasData) {
-            //   print(snapshot.data);
-            //   String message = snapshot.data;
-            //   GameState gameState = GameState.fromJson(jsonDecode(message));
-            //   if (gameState.playerId != "") {
-            //     myPlayer = gameState.playerId;
-            //   }
+            //return _defaultGame;
+            if (snapshot.hasData) {
+              print(snapshot.data);
+              String message = snapshot.data;
+              GameState gameState = GameState.fromJson(jsonDecode(message));
+              if (gameState.playerId != "") {
+                myPlayer = gameState.playerId;
+              }
 
-            //   if (gameState.game.id != "") {
-            //     return GamePool(
-            //       channel: channel,
-            //       gameState: gameState,
-            //       player: myPlayer,
-            //     );
-            //   }
-            // }
-            // return Center(
-            //   child: Column(
-            //     mainAxisSize: MainAxisSize.min,
-            //     children: <Widget>[
-            //       RaisedButton(
-            //         child: Text(
-            //           "Començar una partida",
-            //           style: TextStyle(
-            //               fontSize: 24,
-            //               letterSpacing: 1.5,
-            //               fontWeight: FontWeight.w500),
-            //         ),
-            //         onPressed: () {
-            //           var d = jsonEncode(GameRequest(newGame: true));
-            //           print("CREATE NEW GAME $d");
-            //           channel.sink.add(d);
-            //         },
-            //         color: Theme.of(context).primaryColor,
-            //       ),
-            //       SizedBox(height: 56),
-            //       Container(
-            //         width: 300,
-            //         child: Row(
-            //           crossAxisAlignment: CrossAxisAlignment.end,
-            //           children: <Widget>[
-            //             Flexible(
-            //               child: TextField(
-            //                 decoration:
-            //                     InputDecoration(hintText: "Id de partida"),
-            //                 controller: _gameCtrl,
-            //               ),
-            //             ),
-            //             OutlineButton(
-            //               onPressed: () {
-            //                 print(_gameCtrl.text);
-            //                 channel.sink.add(jsonEncode(GameRequest(
-            //                   gameId: _gameCtrl.text,
-            //                   newPlayer: true,
-            //                 )));
-            //               },
-            //               child: Text("Unirse"),
-            //               color: Theme.of(context).primaryColor,
-            //             ),
-            //           ],
-            //         ),
-            //       )
-            //     ],
-            //   ),
-            // );
+              if (gameState.game.id != "") {
+                return GamePool(
+                  channel: channel,
+                  gameState: gameState,
+                  player: myPlayer,
+                );
+              }
+            }
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  RaisedButton(
+                    child: Text(
+                      "Començar una partida",
+                      style: TextStyle(
+                          fontSize: 24,
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    onPressed: () {
+                      var d = jsonEncode(GameRequest(newGame: true));
+                      print("CREATE NEW GAME $d");
+                      channel.sink.add(d);
+                    },
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  SizedBox(height: 56),
+                  Container(
+                    width: 300,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Flexible(
+                          child: TextField(
+                            decoration:
+                                InputDecoration(hintText: "Id de partida"),
+                            controller: _gameCtrl,
+                          ),
+                        ),
+                        OutlineButton(
+                          onPressed: () {
+                            print(_gameCtrl.text);
+                            channel.sink.add(jsonEncode(GameRequest(
+                              gameId: _gameCtrl.text,
+                              newPlayer: true,
+                            )));
+                          },
+                          child: Text("Unirse"),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            );
           },
         ),
       ),

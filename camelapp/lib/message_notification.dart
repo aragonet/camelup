@@ -32,8 +32,8 @@ class _MessageNotificationState extends State<MessageNotification>
     return AnimatedBuilder(
       animation: _curve,
       builder: (context, child) => Transform.translate(
-        offset: Offset(0, _curve.value * SizeUtil.getY(60)),
-        child: Transform.scale(scale: 1 - _curve.value, child: child),
+        offset: Offset(0, _curve.value * SizeUtil.getY(90)),
+        child: Transform.scale(scale: 0.6 - _curve.value, child: child),
       ),
       child: Container(
         decoration: BoxDecoration(
