@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:html';
 import 'dart:io';
+import 'package:camelapp/animations/dice_thrown.dart';
 import 'package:camelapp/game_pool.dart';
 import 'package:camelapp/models/models.dart';
+import 'package:camelapp/size_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +21,8 @@ class _DashboardState extends State<Dashboard> {
   String myPlayer;
   TextEditingController _gameCtrl;
   GamePool _defaultGame;
+  GameState _oldGame;
+  bool _diceThrown;
 
   @override
   void initState() {
@@ -27,10 +31,8 @@ class _DashboardState extends State<Dashboard> {
     channel = HtmlWebSocketChannel.connect('ws://${uri.host}:8001');
 
     _gameCtrl = TextEditingController();
-
-    _defaultGame = GamePool(
-      channel: channel,
-      gameState: GameState.fromJson(jsonDecode("""
+    _diceThrown = false;
+    var g = GameState.fromJson(jsonDecode("""
                   {"error_code":0,
                   "game":
                     {"id":"m",
@@ -50,22 +52,25 @@ class _DashboardState extends State<Dashboard> {
                     "game_ended":false
                     },
                   "player_id":"6tSv"
-                }""")),
+                }"""));
+    _defaultGame = GamePool(
+      channel: channel,
+      gameState: g,
+      oldGame: _oldGame,
       player: "6tSv",
     );
+    _oldGame = g;
 
-    Future.delayed(Duration(seconds: 5), () {
-      setState(() {
-        _defaultGame = GamePool(
-          channel: channel,
-          gameState: GameState.fromJson(jsonDecode("""
+    var _newGame = GamePool(
+      channel: channel,
+      gameState: GameState.fromJson(jsonDecode("""
                   {"error_code":0,
                   "game":
                     {"id":"m",
                     "camels":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":5}],
                     "players":[{"id":"6tSv","points":0},{"id":"","points":0}],
                     "circuit":[[2,3,4,5],[],[],[1],[],[],[],[],[],[],[],[],[],[],[],[],[]],
-                    "thrown_dices":[],
+                    "thrown_dices":[{"number": 1, "camel_id": 1}],
                     "round_cards":[
                       [{"points":5,"player_id":0},{"points":3,"player_id":0},{"points":2,"player_id":0}],
                       [{"points":5,"player_id":0},{"points":3,"player_id":0},{"points":2,"player_id":0}],
@@ -79,8 +84,20 @@ class _DashboardState extends State<Dashboard> {
                     },
                   "player_id":"6tSv"
                 }""")),
-          player: "6tSv",
-        );
+      oldGame: _oldGame,
+      player: "6tSv",
+    );
+
+    if (_newGame.gameState.game.thrownDices.length > 0 &&
+        _newGame.gameState.game.thrownDices.length !=
+            _defaultGame.gameState.game.thrownDices.length) {
+      print(
+          "Show new dice ${jsonEncode(_newGame.gameState.game.thrownDices.last)}");
+      _diceThrown = true;
+    }
+    Future.delayed(Duration(seconds: 5), () {
+      setState(() {
+        _defaultGame = _newGame;
       });
     });
   }
@@ -94,12 +111,23 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    SizeUtil.size = MediaQuery.of(context).size;
     return Scaffold(
       body: SafeArea(
         child: StreamBuilder(
           stream: channel.stream,
           builder: (context, snapshot) {
-            //return _defaultGame;
+            return Stack(
+              children: <Widget>[
+                _defaultGame,
+                if (_diceThrown)
+                  DiceThrown(value: 1, camelId: 0),
+                // DiceThrown(value: 1, camelId: 1),
+                // DiceThrown(value: 1, camelId: 2),
+                // DiceThrown(value: 1, camelId: 3),
+                // DiceThrown(value: 1, camelId: 4)
+              ],
+            );
             if (snapshot.hasData) {
               print(snapshot.data);
               String message = snapshot.data;

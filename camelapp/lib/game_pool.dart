@@ -8,10 +8,10 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class GamePool extends StatefulWidget {
   final WebSocketChannel channel;
-  final GameState gameState;
+  final GameState gameState, oldGame;
   final String player;
 
-  GamePool({this.channel, this.gameState, this.player});
+  GamePool({this.channel, this.gameState, this.player, this.oldGame});
 
   @override
   _GamePoolState createState() => _GamePoolState();

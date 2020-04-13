@@ -321,19 +321,19 @@ class _MyCanvasState extends State<MyCanvas> {
           color: getCamelColor(camelId)),
     );
   }
+}
 
-  Color getCamelColor(int camelId) {
-    switch (camelId) {
-      case 0:
-        return Colors.orange;
-      case 1:
-        return Colors.white;
-      case 2:
-        return Colors.yellow;
-      case 3:
-        return Colors.green;
-      default:
-        return Colors.blue;
-    }
+Color getCamelColor(int camelId) {
+  switch (camelId) {
+    case 0:
+      return Colors.orange;
+    case 1:
+      return Colors.white;
+    case 2:
+      return Colors.yellow;
+    case 3:
+      return Colors.green;
+    default:
+      return Colors.blue;
   }
 }

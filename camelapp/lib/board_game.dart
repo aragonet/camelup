@@ -1,6 +1,7 @@
 import 'dart:convert';
-
-import 'package:camelapp/message_notification.dart';
+import 'package:camelapp/animations/your_turn.dart';
+import 'package:camelapp/dice.dart';
+import 'package:camelapp/main.dart';
 import 'package:camelapp/models/models.dart';
 import 'package:camelapp/open_painter.dart';
 import 'package:camelapp/players_info.dart';
@@ -8,6 +9,14 @@ import 'package:camelapp/size_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+var dicePosition = [
+  Position(65.5, 39),
+  Position(59, 56),
+  Position(63.5, 49),
+  Position(63.5, 29),
+  Position(59, 23),
+];
 
 class BoardGame extends StatefulWidget {
   final GameState gameState;
@@ -191,26 +200,21 @@ class _BoardGameState extends State<BoardGame> {
   }
 
   Widget buildDice(int camelId, int value) {
-    var _dicePosition = [
-      Position(68.5, 43.5),
-      Position(62, 60),
-      Position(67, 54),
-      Position(66.5, 33.5),
-      Position(62, 27),
-    ];
-    var position = _dicePosition[camelId];
+    var position = dicePosition[camelId];
     return Positioned(
-      left: SizeUtil.getX(position.x),
-      top: SizeUtil.getY(position.y),
-      child: Text(
-        "$value",
-        style: TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 30,
-          color: Color(0xff293749),
-        ),
-      ),
-    );
+        left: SizeUtil.getX(position.x),
+        top: SizeUtil.getY(position.y),
+        child: Transform.scale(
+            scale: 0.5, child: DiceWidget(value: value, camelId: camelId))
+        // child: Text(
+        //   "$value",
+        //   style: TextStyle(
+        //     fontWeight: FontWeight.w500,
+        //     fontSize: 30,
+        //     color: Color(0xff293749),
+        //   ),
+        // ),
+        );
   }
 
   Widget buildGameOver() {
@@ -254,24 +258,9 @@ class _BoardGameState extends State<BoardGame> {
       right: 0,
       child: Container(
         child: Center(
-          child: MessageNotification(),
+          child: YourTurnAnimation(),
         ),
       ),
     );
-  }
-}
-
-Color getCamelColor(int camelId) {
-  switch (camelId) {
-    case 0:
-      return Colors.orange;
-    case 1:
-      return Colors.white;
-    case 2:
-      return Colors.yellow;
-    case 3:
-      return Colors.green;
-    default:
-      return Colors.blue;
   }
 }

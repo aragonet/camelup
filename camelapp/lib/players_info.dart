@@ -1,4 +1,5 @@
 import 'package:camelapp/board_game.dart';
+import 'package:camelapp/main.dart';
 import 'package:camelapp/models/models.dart';
 import 'package:camelapp/size_util.dart';
 import 'package:flutter/cupertino.dart';
@@ -108,8 +109,8 @@ class PlayersInfo extends StatelessWidget {
     );
   }
 
-  Color getPlayerColor(int player_id) {
-    switch (player_id) {
+  Color getPlayerColor(int playerId) {
+    switch (playerId) {
       case 0:
         return Colors.indigo;
       case 1:
@@ -124,7 +125,7 @@ class PlayersInfo extends StatelessWidget {
         return Colors.amber;
       case 6:
         return Colors.red;
-      case 7:
+      default:
         return Colors.cyan;
     }
   }
