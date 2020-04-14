@@ -21,9 +21,18 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.amber,
       ),
-      home: Dashboard(),
+      home: Proxy(),
       //home: MyHomePage(),
     );
+  }
+}
+
+class Proxy extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    SizeUtil.size = MediaQuery.of(context).size;
+
+    return Dashboard();
   }
 }
 

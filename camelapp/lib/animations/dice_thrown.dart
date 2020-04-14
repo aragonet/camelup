@@ -25,8 +25,8 @@ class _DriceThrownState extends State<DiceThrown>
       vsync: this,
       duration: Duration(seconds: 3),
     );
-    _curve = CurvedAnimation(parent: _animationCtrl, curve: Curves.ease);
-    // _sizeCurve = CurvedAnimation(parent: _animationCtrl, curve: Curves.ease);
+    _curve = Tween(begin: 0.4, end: 1)
+        .animate(CurvedAnimation(parent: _animationCtrl, curve: Curves.ease));
     _animationCtrl.forward();
   }
 
@@ -44,7 +44,7 @@ class _DriceThrownState extends State<DiceThrown>
       builder: (context, child) => Transform.translate(
         offset: Offset(
           SizeUtil.getX(position.x * _curve.value),
-          SizeUtil.getY(position.y * _curve.value),
+          SizeUtil.getY(position.y),
         ),
         child: Transform.scale(
             scale: _animationCtrl.value > 0.5 ? 0.5 : 1 - _animationCtrl.value,

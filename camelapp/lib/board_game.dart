@@ -85,7 +85,6 @@ class _BoardGameState extends State<BoardGame> {
           ...buildRoundCards(),
           ...buildDices(),
           buildGameOver(),
-          buildMessage(),
         ]),
         PlayersInfo(
           gameState: this.widget.gameState,
@@ -233,32 +232,6 @@ class _BoardGameState extends State<BoardGame> {
             "Fi del joc",
             style: TextStyle(fontSize: 64),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildMessage() {
-    var playerIndex = 0;
-    for (var i = 0; i < this.widget.gameState.game.players.length; i++) {
-      if (this.widget.gameState.game.players[i].id == this.widget.playerId) {
-        playerIndex = i + 1;
-        break;
-      }
-    }
-
-    if (this.widget.gameState.game.playerTurn != playerIndex) {
-      return SizedBox();
-    }
-
-    return Positioned(
-      top: 0,
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        child: Center(
-          child: YourTurnAnimation(),
         ),
       ),
     );

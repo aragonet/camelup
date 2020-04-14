@@ -76,8 +76,8 @@ class DiceWidget extends StatelessWidget {
 
     return [
       Positioned(
-        top: SizeUtil.getX(_width - (_width / 4)) - (radius / 2),
-        left: SizeUtil.getX(_width / 4) - (radius / 2),
+        top: SizeUtil.getX(_width / 4) - (radius / 2),
+        left: SizeUtil.getX(_width - (_width / 4)) - (radius / 2),
         child: Container(
           width: radius,
           height: radius,
